@@ -42,6 +42,7 @@
         .left .bubble { background-color: var(--other-bubble); border-top-left-radius: 4px; }
         .right .bubble { background-color: var(--my-bubble); border-top-right-radius: 4px; }
         
+        /* 播放中的视觉强化 */
         .playing-now .bubble:not(.image-bubble) { transform: scale(0.96); filter: brightness(0.9); outline: 2px solid rgba(255,255,255,0.5); }
         .bubble.image-bubble { padding: 0; background: transparent !important; box-shadow: none; cursor: default; } 
         .bubble.image-bubble img { max-width: 200px; border-radius: 12px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
@@ -60,6 +61,7 @@
         .zh-text { font-size: 19px; font-weight: 500; }
         .th-text { font-size: 19px; }
 
+        /* 通关图层 */
         #congrats-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.75);
@@ -106,16 +108,16 @@
             <img id="userImg" class="user-avatar-big" src="" alt="avatar">
             <div class="congrats-title">🎉 恭喜通关 🎉</div>
             <div class="congrats-text">
-               <span id="userName" style="color:#2c3e50; font-weight:bold;">你真棒！</span><br>
+               <span id="userName" style="color:#2c3e50; font-weight:bold;">同学</span>，你真棒！<br>
                  เก่งมากเลยครับ
             </div>
             <div id="displayTime" class="congrats-time"></div>
-            <button class="close-btn" onclick="liff.closeWindow()">X</button>
+            <button class="close-btn" onclick="liff.closeWindow()">关闭</button>
         </div>
     </div>
 
 <script>
-    // 修复点1：补充了对象属性之间的逗号
+    // 角色数据设定
     const ROLES = {
         bb: { name: "北北", avatar: "images/beibei.jpg" },
         nn: { name: "南南", avatar: "images/nannan.jpg" },
@@ -123,19 +125,20 @@
         mama: { name: "妈妈", avatar: "images/mama.jpg" }
     };
 
+    // 原始对话数据
     const rawData = [
         { id: "1", side: 'right', ...ROLES.nn, zh: "你去哪儿？", th: "คุณจะไปไหน" },
         { id: "2", side: 'left', ...ROLES.bb, zh: "我去医院。", th: "ฉันจะไปโรงพยาบาล" },
         { id: "3", side: 'left', ...ROLES.bb, zh: "你们去哪儿？", th: "พวกคุณจะไปไหน" },
         { id: "4", side: 'right', ...ROLES.nn, zh: "我们去学校。", th: "พวกเราจะไปโรงเรียน" },
-        { id: "5", side: 'right', ...ROLES.nn, zh: "今天几月几号？", th: "วันนี้วันที่เท่าไหร่" }, // 修复点2：补充逗号
-        { id: "6", side: 'left', ...ROLES.bb, zh: "今天十一月二十九号？", th: "วันนี้วันที่ยี่สิบเก้าพฤศจิกายน" },
-        { id: "7", side: 'right', ...ROLES.nn, zh: "今天星期几？", th: "วันนี้วันอะไร" }, // 修复点2：补充逗号
+        { id: "5", side: 'right', ...ROLES.nn, zh: "今天几月几号？", th: "วันนี้วันที่เท่าไหร่" },
+        { id: "6", side: 'left', ...ROLES.bb, zh: "今天十一月二十九号？", th: "วันนี้วันที่ 29 พฤศจิกายน" },
+        { id: "7", side: 'right', ...ROLES.nn, zh: "今天星期几？", th: "วันนี้วันอะไร" },
         { id: "8", side: 'left', ...ROLES.bb, zh: "今天星期二。", th: "วันนี้วันอังคาร" },
-        { id: "9", side: 'right', ...ROLES.nn, zh: "现在几点？", th: "ตอนนี้กี่โมง" }, // 修复点2：补充逗号
-        { id: "10", side: 'left', ...ROLES.bb, zh: "现在七点。", th: "ตอนนี้เจ็ดโมง" },
+        { id: "9", side: 'right', ...ROLES.nn, zh: "现在几点？", th: "ตอนนี้กี่โมง" },
+        { id: "10", side: 'left', ...ROLES.bb, zh: "现在七点。", th: "ตอนนี้ 7โมง" },
         { id: "11", side: 'left', ...ROLES.bb, zh: "现在几点？", th: "ตอนนี้กี่โมง" },
-        { id: "12", side: 'right', ...ROLES.nn, zh: "现在四点四十五分。", th: "ตอนนี้สี่โมงสี่สิบห้านาที" },
+        { id: "12", side: 'right', ...ROLES.nn, zh: "现在四点四十五分。", th: "ตอนนี้ 4:45" },
         { id: "13", side: 'left', ...ROLES.bb, zh: "你会游泳吗？", th: "คุณว่ายน้ำเป็นไหม" },
         { id: "14", side: 'right', ...ROLES.nn, zh: "我不会游泳。", th: "ฉันว่ายน้ำไม่เป็น" },
         { id: "15", side: 'left', ...ROLES.bb, zh: "你会打篮球吗？", th: "คุณเล่นบาสเกตบอลเป็นไหม" },
@@ -143,7 +146,7 @@
         { id: "17", side: 'left', ...ROLES.bb, zh: "你要买什么？", th: "คุณจะซื้ออะไร" },
         { id: "18", side: 'right', ...ROLES.nn, zh: "我要买本子。", th: "ฉันจะซื้อสมุด" },
         { id: "19", side: 'right', ...ROLES.nn, zh: "多少钱？", th: "เท่าไหร่" },
-        { id: "20", side: 'left', ...ROLES.bb, zh: "两块。", th: "สองบาท" },
+        { id: "20", side: 'left', ...ROLES.bb, zh: "两块。", th: "2 เหรียญ " },
         { id: "21", side: 'left', ...ROLES.mama, zh: "你想吃什么？", th: "คุณอยากกินอะไร" },
         { id: "22", side: 'right', ...ROLES.nn, zh: "我想吃汉堡包", th: "ฉันอยากกินแฮมเบอร์เกอร์" },
         { id: "23", side: 'left', ...ROLES.mama, zh: "你想喝什么？", th: "คุณอยากดื่มอะไร" },
@@ -156,16 +159,16 @@
         { id: "30", side: 'right', ...ROLES.nn, zh: "我比你矮。", th: "ฉันเตี้ยกว่าคุณ" },
         { id: "31", side: 'left', ...ROLES.bb, zh: "我比你大。", th: "ฉันโตกว่าคุณ" },
         { id: "32", side: 'right', ...ROLES.nn, zh: "我比你小。", th: "ฉันเด็กกว่าคุณ" },
-        { id: "33", side: 'left', ...ROLES.mingming, zh: "喂，南南在家吗？", th: "ฮัลโหล หนานหนานอยู่บ้านไหม" },
-        { id: "34", side: 'right', ...ROLES.mama, zh: "她在家，", th: "เขาอยู่บ้าน" },
-        { id: "34-2", side: 'right', ...ROLES.mama, zh: "你是谁？", th: "คุณเป็นใคร" },
+        { id: "33", side: 'left', ...ROLES.mingming, zh: "喂，南南在家吗？", th: "ฮัลโฮล หนานหนานอยู่บ้านไหม" },
+        { id: "34", side: 'left', ...ROLES.mama, zh: "她在家，", th: "เขาอยู่บ้าน" },
+        { id: "34-2", side: 'left', ...ROLES.mama, zh: "你是谁？", th: "คุณเป็นใคร" },
         { id: "35", side: 'left', ...ROLES.mingming, zh: "我是她的朋友明明。", th: "ฉันเป็นเพื่อนของเขา ชื่อหมิงหมิง" },
-        { id: "36", side: 'right', ...ROLES.mama, zh: "等一下。", th: "รอสักครู่" },
+        { id: "36", side: 'left', ...ROLES.mama, zh: "等一下。", th: "รอสักครู่" },
         { id: "37", side: 'left', ...ROLES.bb, zh: "今天天气怎么样？", th: "วันนี้อากาศเป็นอย่างไร" },
         { id: "38", side: 'right', ...ROLES.nn, zh: "今天天气很好，", th: "วันนี้อากาศดี" },
         { id: "38-2", side: 'right', ...ROLES.nn, zh: "今天晴天。", th: "วันนี้แดดออก" },
         { id: "39", side: 'left', ...ROLES.bb, zh: "今天天气怎么样？", th: "วันนี้อากาศเป็นอย่างไร" },
-        { id: "40", side: 'right', ...ROLES.nn, zh: "今天天气不好，", th: "วันนี้อากาศไม่ดี" }, // 修复点3：补充逗号
+        { id: "40", side: 'right', ...ROLES.nn, zh: "今天天气不好，", th: "วันนี้อากาศไม่ดี" },
         { id: "40-2", side: 'right', ...ROLES.nn, zh: "今天下雨。", th: "วันนี้ฝนตก" }
     ];
 
@@ -186,18 +189,23 @@
     const getSafeId = (id) => String(id).replace(/[.-]/g, '_');
     const getSortVal = (id) => parseFloat(String(id).replace('-', '.'));
 
+    // --- LIFF 初始化逻辑集成 ---
     async function init() {
         try {
-            await liff.init({ liffId: "2009077149-N5kd2OBe" });
+            await liff.init({ liffId: "2009077149-GhV4Sv5S" }); // 集成新 ID
             if (!liff.isLoggedIn() && liff.isInClient()) {
                 liff.login();
             } else {
+                // 成功登录后获取用户信息
                 const profile = await liff.getProfile();
                 userProfile.name = profile.displayName;
                 userProfile.avatar = profile.pictureUrl;
             }
-        } catch (err) { console.error("LIFF 启动失败:", err); }
+        } catch (err) { 
+            console.error("LIFF 启动失败:", err); 
+        }
 
+        // iOS 自动播放声音解锁
         document.body.addEventListener('touchstart', unlockAudio, { once: true });
 
         rawData.sort((a, b) => getSortVal(a.id) - getSortVal(b.id));
@@ -250,7 +258,7 @@
     async function playFX(file) {
         fxPlayer.src = `audio/${file}`;
         fxPlayer.load();
-        try { await fxPlayer.play(); } catch(e) { console.log("FX play blocked"); }
+        try { await fxPlayer.play(); } catch(e) { console.log("音效播放被拦截"); }
     }
 
     function handlePlay(s, element) {
@@ -308,18 +316,14 @@
         }
     }
 
+    // 弹出通关奖励界面
     function showCongrats() {
         playFX('yinxiao-win.mp3');
         
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         
-        document.getElementById('displayTime').textContent = `${year}年${month}月${day}日 ${hours}:${minutes}`;
-        
+        document.getElementById('displayTime').textContent = timeStr;
         document.getElementById('userName').textContent = userProfile.name;
         document.getElementById('userImg').src = userProfile.avatar || 'images/default-avatar.jpg';
         document.getElementById('congrats-overlay').style.display = 'flex';
