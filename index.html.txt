@@ -199,7 +199,7 @@
     async function init() {
         try {
             // 使用您最新的 LIFF ID
-            await liff.init({ liffId: "2009077149-N5kd2OBe" }); 
+            await liff.init({ liffId: "2009077149-GhV4Sv5S" }); 
             if (!liff.isLoggedIn() && liff.isInClient()) {
                 liff.login();
             } else {
